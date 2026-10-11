@@ -15,7 +15,7 @@
   --red:#C24545;--red-tint:#FBEAEA;--slate:#3B4E7A;--slate-tint:#E9EEF7;
   --radius:12px;
   /* Status colours */
-  --st-notstarted:#27272A;--st-production:#A14302;--st-completed:#214E47;--st-nostock:#C24545;--st-other:#7A8BA8;
+  --st-notstarted:#27272A;--st-production:#EE7D1C;--st-completed:#214E47;--st-nostock:#C24545;--st-other:#7A8BA8;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -189,12 +189,13 @@ let townSource=null, townLayers=[], townMarkers=[], showTowns=true;
 /* ── STATUS BUCKETS ── Production Pit Status text → filter/colour bucket */
 const BUCKETS=[
   {key:'not-started',  label:'Not started',              hex:'#27272A', bg:'#E4E4E7'},
-  {key:'in-production',label:'In production',            hex:'#A14302', bg:'#FED5B8'},
+  {key:'in-production',label:'In production',            hex:'#A14302', bg:'#FED5B8', pin:'#EE7D1C'},
   {key:'completed',    label:'Completed',                hex:'#214E47', bg:'#D6F1E9'},
   {key:'no-stock',     label:'No more gravel available', hex:'#C24545', bg:'#FBEAEA'},
 ];
 const OTHER_BUCKET={key:'other',label:'Other',hex:'#7A8BA8',bg:'#EEF0F6'};
-BUCKETS.concat(OTHER_BUCKET).forEach(b=>{b.color=b.hex;});
+// pin = colour for map pins, legend and list dots (defaults to the pill text colour)
+BUCKETS.concat(OTHER_BUCKET).forEach(b=>{b.pin=b.pin||b.hex;b.color=b.pin;});
 function bucketOf(status){
   const s=(status||'').toLowerCase();
   if(!s) return OTHER_BUCKET;
@@ -428,7 +429,7 @@ function renderMarkers(){
   markers.forEach(m=>azMap.markers.remove(m.marker)); markers=[];
   visiblePits().filter(p=>p.hasGps).forEach(p=>{
     const marker=new atlas.HtmlMarker({
-      htmlContent:`<div class="pin-host"><div class="pin" style="background:${p.bucket.hex}"></div><div class="pin-label">${esc(displayName(p))}</div></div>`,
+      htmlContent:`<div class="pin-host"><div class="pin" style="background:${p.bucket.pin}"></div><div class="pin-label">${esc(displayName(p))}</div></div>`,
       position:[p.lng,p.lat],anchor:'center'
     });
     azMap.markers.add(marker);
