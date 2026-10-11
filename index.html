@@ -138,8 +138,8 @@ body.dark #mapLoader{background:rgba(21,23,28,.9)}
       <div class="map-wrap">
         <div id="azureMap"></div>
         <div class="style-toggle">
-          <button class="style-btn active" id="btnRoad" onclick="setMapStyle('road')">Map</button>
-          <button class="style-btn" id="btnSat" onclick="setMapStyle('satellite')">Satellite</button>
+          <button class="style-btn" id="btnRoad" onclick="setMapStyle('road')">Map</button>
+          <button class="style-btn active" id="btnSat" onclick="setMapStyle('satellite')">Satellite</button>
         </div>
         <div class="map-ctrls">
           <div class="ctrl-group"><button onclick="fitAll()" title="Fit all pins"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>
@@ -359,7 +359,7 @@ function initMap(){
   showLoader('Loading map…');
   document.querySelector('#mapLoader .loader-track').style.display='';
   azMap=new atlas.Map('azureMap',{
-    center:DEFAULT_CENTER,zoom:DEFAULT_ZOOM,style:'road',language:'en-AU',
+    center:DEFAULT_CENTER,zoom:DEFAULT_ZOOM,style:'satellite_road_labels',language:'en-AU',
     authOptions:{authType:'subscriptionKey',subscriptionKey:AZURE_KEY},
     renderWorldCopies:false,showLogo:false,showFeedbackLink:false
   });
