@@ -81,8 +81,7 @@ button{font-family:inherit;cursor:pointer}
 .pit-text{flex:1;min-width:0}
 .pit-name{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pit-meta{font-size:11px;color:var(--muted);margin-top:1px}
-.pit-status{display:inline-flex;align-items:center;gap:4px;font-weight:600;font-size:10.5px;padding:1px 8px;border-radius:20px;vertical-align:1px}
-.pit-status::before{content:"";width:4px;height:4px;border-radius:50%;background:currentColor}
+.pit-status{font-weight:600}
 .pit-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .nogps{display:inline-block;margin-left:6px;font-size:9.5px;font-weight:700;color:var(--amber);background:var(--amber-tint);padding:1px 6px;border-radius:4px;vertical-align:1px}
 .chev{width:14px;height:14px;color:var(--muted);flex-shrink:0}
@@ -101,6 +100,7 @@ button{font-family:inherit;cursor:pointer}
 .info-line .v{color:var(--ink);font-weight:600;text-align:right;min-width:0;word-break:break-word}
 .status-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .status-pill::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.status-text{font-size:12px;font-weight:600;white-space:nowrap}
 .cat-pill{display:inline-flex;font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:6px;white-space:nowrap}
 .cat-private{background:var(--violet-tint);color:var(--violet-dark)}
 .cat-nbrc{background:var(--green-tint);color:var(--green)}
@@ -189,7 +189,7 @@ let townSource=null, townLayers=[], townMarkers=[], showTowns=true;
 /* ── STATUS BUCKETS ── Production Pit Status text → filter/colour bucket */
 const BUCKETS=[
   {key:'not-started',  label:'Not started',              hex:'#27272A', bg:'#E4E4E7'},
-  {key:'in-production',label:'In production',            hex:'#A14302', bg:'#FED5B8', pin:'#EE7D1C'},
+  {key:'in-production',label:'Under Production',         hex:'#A14302', bg:'#FED5B8', pin:'#EE7D1C'},
   {key:'completed',    label:'Completed',                hex:'#214E47', bg:'#D6F1E9'},
   {key:'no-stock',     label:'No more gravel available', hex:'#C24545', bg:'#FBEAEA'},
 ];
@@ -208,14 +208,14 @@ function bucketOf(status){
 
 /* ── DEMO DATA ── shown only when no hash payload is present */
 const DEMO=[
-  {Pit_Name:'Rodney Ball Pit',Pit_ID:'389',Locality:'Monto',Latitude:-24.835,Longitude:151.098,Production_Pit_Status:'In production',Category:'Private',Owner:'Kenneth Ball',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:107,Last_Production_Date:'2026-08-25'},
-  {Pit_Name:'Hampson Pit',Pit_ID:'175',Locality:'Monto',Latitude:-24.902,Longitude:151.172,Production_Pit_Status:'In production',Category:'Private',Owner:'Hugh S Stanhope',Owner_Issue:'Access track dispute',Extraction_Limit:5000,Capacity_Used:100,Last_Production_Date:'2026-08-21'},
-  {Pit_Name:'Goschnicks Pit',Pit_ID:'181',Locality:'Monto',Latitude:-24.791,Longitude:151.205,Production_Pit_Status:'In production',Category:'Private',Owner:'Michael Downs',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:95,Last_Production_Date:'2026-08-19'},
-  {Pit_Name:'Salisbury Pit',Pit_ID:'433',Locality:'Monto',Latitude:-24.930,Longitude:151.060,Production_Pit_Status:'In production',Category:'Private',Owner:'Russ Salisbury',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:211,Last_Production_Date:'2026-08-02'},
-  {Pit_Name:'Bonnie Doone',Pit_ID:'239',Locality:'Monto',Latitude:-24.760,Longitude:151.130,Production_Pit_Status:'In production',Category:'Private',Owner:'Grant & Carly Burnham',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:37,Last_Production_Date:'2026-08-15'},
+  {Pit_Name:'Rodney Ball Pit',Pit_ID:'389',Locality:'Monto',Latitude:-24.835,Longitude:151.098,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Kenneth Ball',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:107,Last_Production_Date:'2026-08-25'},
+  {Pit_Name:'Hampson Pit',Pit_ID:'175',Locality:'Monto',Latitude:-24.902,Longitude:151.172,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Hugh S Stanhope',Owner_Issue:'Access track dispute',Extraction_Limit:5000,Capacity_Used:100,Last_Production_Date:'2026-08-21'},
+  {Pit_Name:'Goschnicks Pit',Pit_ID:'181',Locality:'Monto',Latitude:-24.791,Longitude:151.205,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Michael Downs',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:95,Last_Production_Date:'2026-08-19'},
+  {Pit_Name:'Salisbury Pit',Pit_ID:'433',Locality:'Monto',Latitude:-24.930,Longitude:151.060,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Russ Salisbury',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:211,Last_Production_Date:'2026-08-02'},
+  {Pit_Name:'Bonnie Doone',Pit_ID:'239',Locality:'Monto',Latitude:-24.760,Longitude:151.130,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Grant & Carly Burnham',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:37,Last_Production_Date:'2026-08-15'},
   {Pit_Name:'Baywulla Pit',Pit_ID:'347',Locality:'Monto',Latitude:-24.880,Longitude:151.240,Production_Pit_Status:'Completed',Category:'NBRC',Owner:'NBRC',Owner_Issue:'',Extraction_Limit:2000,Capacity_Used:9,Last_Production_Date:'2026-07-03'},
   {Pit_Name:'Yarrol Rd Roadside',Pit_ID:'327',Locality:'Monto',Latitude:-24.960,Longitude:151.150,Production_Pit_Status:'No more gravel available',Category:'NBRC',Owner:'NBRC',Owner_Issue:'',Extraction_Limit:2000,Capacity_Used:0,Last_Production_Date:''},
-  {Pit_Name:'Ellbank Pit',Pit_ID:'50',Locality:'Eidsvold',Latitude:-25.355,Longitude:151.085,Production_Pit_Status:'In production',Category:'Private',Owner:'Lance & Janelle Burnham',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:75,Last_Production_Date:'2026-08-14'},
+  {Pit_Name:'Ellbank Pit',Pit_ID:'50',Locality:'Eidsvold',Latitude:-25.355,Longitude:151.085,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Lance & Janelle Burnham',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:75,Last_Production_Date:'2026-08-14'},
   {Pit_Name:'Glencoe 1 - Forestry Pit',Pit_ID:'49',Locality:'Eidsvold',Latitude:-25.420,Longitude:151.160,Production_Pit_Status:'Not started',Category:'State',Owner:'DAFF',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:null,Last_Production_Date:''},
   {Pit_Name:'Kerles Pit',Pit_ID:'277',Locality:'Mundubbera',Latitude:-25.560,Longitude:151.270,Production_Pit_Status:'Not started',Category:'Private',Owner:'',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:null,Last_Production_Date:''},
   {Pit_Name:'Draytons',Pit_ID:'133',Locality:'Gayndah',Latitude:-25.650,Longitude:151.580,Production_Pit_Status:'Not started',Category:'Private',Owner:'',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:null,Last_Production_Date:''},
@@ -327,7 +327,7 @@ function renderPanel(){
       <span class="pit-dot" style="background:${p.bucket.color}"></span>
       <div class="pit-text">
         <div class="pit-name">${esc(p.name)}${!p.hasGps?'<span class="nogps">No GPS</span>':''}</div>
-        <div class="pit-meta">${esc(p.locality||'—')} <span class="pit-status" style="color:${p.bucket.hex};background:${p.bucket.bg}">${esc(p.status||'—')}</span></div>
+        <div class="pit-meta">${esc(p.locality||'—')} · <span class="pit-status" style="color:${p.bucket.pin}">${esc(p.status||'—')}</span></div>
       </div>
       <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
     </div>`).join('');
@@ -344,7 +344,7 @@ function detailHtml(p){
   return `<button class="detail-back" onclick="clearSelection()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back to pit list</button>
   <div class="panel-head" style="border-top:3px solid ${b.color};margin-top:10px;padding-top:14px;">
     <div style="min-width:0"><div class="panel-title">${esc(displayName(p))}</div><div class="panel-sub">${esc(p.locality||'—')}, North Burnett</div></div>
-    <span class="status-pill" style="color:${b.hex};background:${b.bg};">${esc(p.status||'—')}</span>
+    <span class="status-text" style="color:${b.pin};">${esc(p.status||'—')}</span>
   </div>
   <div class="panel-body">
     <div class="info-line"><span class="k">Locality</span><span class="v">${esc(p.locality||'—')}</span></div>
