@@ -56,6 +56,11 @@ button{font-family:inherit;cursor:pointer}
 .pin-host:hover .pin-label,.pin-host.is-selected .pin-label{display:block}
 .pin-host{position:relative}
 
+.town{display:flex;flex-direction:column;align-items:center;pointer-events:none;transform:translateY(-6px)}
+.town-label{font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9);white-space:nowrap;margin-bottom:3px;letter-spacing:.2px}
+.town-dot{width:8px;height:8px;border-radius:50%;background:#E9DDBF;border:2px solid #5C6B7A;box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.style-sep{width:1px;background:var(--line);margin:4px 3px}
+
 /* Legend */
 .map-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-soft)}
@@ -140,6 +145,8 @@ body.dark #mapLoader{background:rgba(21,23,28,.9)}
         <div class="style-toggle">
           <button class="style-btn" id="btnRoad" onclick="setMapStyle('road')">Map</button>
           <button class="style-btn active" id="btnSat" onclick="setMapStyle('satellite')">Satellite</button>
+          <span class="style-sep"></span>
+          <button class="style-btn active" id="btnTowns" onclick="toggleTowns()" title="Show/hide town links">Towns</button>
         </div>
         <div class="map-ctrls">
           <div class="ctrl-group"><button onclick="fitAll()" title="Fit all pins"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>
@@ -165,6 +172,17 @@ body.dark #mapLoader{background:rgba(21,23,28,.9)}
 let AZURE_KEY=''; // supplied by Power Apps in the payload (mapKey) — never hardcode it in this repo
 const DEFAULT_CENTER=[151.45,-25.35]; // North Burnett
 const DEFAULT_ZOOM=8;
+
+/* ── TOWNS + LINK ROUTE ── (order matches the manager's mockup loop) */
+const TOWNS=[
+  {name:'Monto',       lng:151.1225, lat:-24.8636},
+  {name:'Mount Perry', lng:151.6431, lat:-25.1786},
+  {name:'Biggenden',   lng:152.0447, lat:-25.5106},
+  {name:'Gayndah',     lng:151.6114, lat:-25.6253},
+  {name:'Mundubbera',  lng:151.3036, lat:-25.5917},
+  {name:'Eidsvold',    lng:151.1236, lat:-25.3711},
+];
+let townSource=null, townLayers=[], townMarkers=[], showTowns=true;
 
 /* ── STATUS BUCKETS ── Production Pit Status text → filter/colour bucket */
 const BUCKETS=[
@@ -363,7 +381,7 @@ function initMap(){
     authOptions:{authType:'subscriptionKey',subscriptionKey:AZURE_KEY},
     renderWorldCopies:false,showLogo:false,showFeedbackLink:false
   });
-  azMap.events.add('ready',()=>{mapReady=true;hideLoader();renderMarkers();});
+  azMap.events.add('ready',()=>{mapReady=true;hideLoader();addTownNetwork();renderMarkers();});
 }
 function setMapStyle(mode){
   if(!azMap)return;
@@ -372,6 +390,32 @@ function setMapStyle(mode){
   document.getElementById('btnSat').classList.toggle('active',mode==='satellite');
 }
 function zoomMap(d){if(!azMap)return;const z=azMap.getCamera().zoom||DEFAULT_ZOOM;azMap.setCamera({zoom:Math.max(3,Math.min(19,z+d)),duration:250,type:'ease'});}
+
+function addTownNetwork(){
+  const ring=TOWNS.map(t=>[t.lng,t.lat]); ring.push(ring[0]);
+  townSource=new atlas.source.DataSource();
+  azMap.sources.add(townSource);
+  townSource.add(new atlas.data.LineString(ring));
+  townLayers=[
+    new atlas.layer.LineLayer(townSource,null,{strokeColor:'rgba(20,28,40,.55)',strokeWidth:5,lineJoin:'round',lineCap:'round'}),
+    new atlas.layer.LineLayer(townSource,null,{strokeColor:'#E9DDBF',strokeWidth:2.5,lineJoin:'round',lineCap:'round'})
+  ];
+  townLayers.forEach(l=>azMap.layers.add(l));
+  townMarkers=TOWNS.map(t=>{
+    const m=new atlas.HtmlMarker({
+      htmlContent:`<div class="town"><div class="town-label">${esc(t.name)}</div><div class="town-dot"></div></div>`,
+      position:[t.lng,t.lat],anchor:'bottom'
+    });
+    azMap.markers.add(m); return m;
+  });
+  applyTownVisibility();
+}
+function applyTownVisibility(){
+  townLayers.forEach(l=>l.setOptions({visible:showTowns}));
+  townMarkers.forEach(m=>m.setOptions({visible:showTowns}));
+  document.getElementById('btnTowns').classList.toggle('active',showTowns);
+}
+function toggleTowns(){showTowns=!showTowns;if(azMap&&townLayers.length)applyTownVisibility();else document.getElementById('btnTowns').classList.toggle('active',showTowns);}
 
 function renderMarkers(){
   if(!mapReady)return;
