@@ -117,6 +117,13 @@ button{font-family:inherit;cursor:pointer}
 .cell-muted{color:var(--muted);font-weight:400}
 .issue{color:var(--red)}
 .coords{font-size:11px;color:var(--muted);padding:10px 6px 0}
+.detail-actions{display:flex;flex-direction:column;gap:10px;padding:16px 6px 6px}
+.act-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:44px;background:#fff;border:1px solid #E4E4E7;border-radius:10px;
+  font-size:14px;font-weight:600;color:#3F3F46;transition:background .12s,border-color .12s}
+.act-btn:hover{background:#FAFAFA;border-color:#D4D4D8}
+.act-btn:active{background:#F4F4F5}
+.act-btn svg{width:18px;height:18px;flex-shrink:0}
+.act-btn.sent{border-color:#A1A1AA}
 
 /* ============ DARK MODE ============ */
 body.dark{
@@ -229,6 +236,7 @@ function normalise(raw,i){
   const name=String(g('Pit_Name','PitName','Pit Name','pitName')??'').trim()||'Unnamed pit';
   const status=String(g('Production_Pit_Status','Production Pit Status','ProductionPitStatus','status')??'').trim();
   return {
+    raw,
     key:(pitId||'x')+'|'+name+'|'+i,
     name, pitId,
     locality:String(g('Locality','locality')??'').trim(),
@@ -358,6 +366,16 @@ function detailHtml(p){
     <div class="info-line"><span class="k">Stock remaining</span><span class="v">${gauge}</span></div>
     <div class="info-line"><span class="k">Last production</span><span class="v">${p.lastProd?esc(fmtDate(p.lastProd)):'<span class="cell-muted">—</span>'}</span></div>
     <div class="coords">${p.hasGps?`📍 ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`:'⚠ No GPS coordinates — not shown on the map'}</div>
+    <div class="detail-actions">
+      <button class="act-btn" onclick="sendPitAction('VIEW_PIT_REGISTER',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        View in Pit Register
+      </button>
+      <button class="act-btn" onclick="sendPitAction('VIEW_ATTACHMENTS',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><path d="m9 13 2 2 4-4"/></svg>
+        View attachments
+      </button>
+    </div>
   </div>`;
 }
 
@@ -379,6 +397,21 @@ function selectPit(key,fly){
     azMap.setCamera({center:[p.lng,p.lat],zoom:Math.max(12,azMap.getCamera().zoom||0),duration:700,type:'fly'});
   }
   if(p) postUp({type:'PIT_SELECTED',pitId:p.pitId,pitName:p.name,locality:p.locality});
+}
+/* Button → Power Apps. Same envelope as the DRFA map: {type:'TASK_UPDATED', task:{type:..., ...}} */
+function sendPitAction(action,btn){
+  const p=selectedKey&&pits.find(x=>x.key===selectedKey); if(!p) return;
+  postUp({type:'TASK_UPDATED',task:Object.assign({},p.raw,{
+    type:action,
+    guid:p.pitId,
+    pitId:p.pitId,
+    pitName:p.name,
+    locality:p.locality,
+    status:p.status,
+    latitude:p.hasGps?p.lat:null,
+    longitude:p.hasGps?p.lng:null
+  })});
+  if(btn){btn.classList.add('sent');setTimeout(()=>btn.classList.remove('sent'),600);}
 }
 function clearSelection(){
   selectedKey=null; renderPanel(); highlightMarkers();
