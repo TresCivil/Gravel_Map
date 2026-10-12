@@ -107,10 +107,15 @@ button{font-family:inherit;cursor:pointer}
 .cat-state{background:var(--slate-tint);color:var(--slate)}
 .cat-tmr{background:var(--amber-tint);color:var(--amber)}
 .cat-other{background:var(--line-soft);color:var(--muted)}
-.gauge{display:flex;align-items:center;gap:8px;justify-content:flex-end}
-.gauge-track{width:96px;height:7px;background:var(--line-soft);border-radius:4px;overflow:hidden}
-.gauge-fill{height:100%;border-radius:4px}
-.gauge-pct{font-size:11.5px;font-weight:600;color:var(--ink-soft);min-width:38px;text-align:right}
+.gauge{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+.gauge-track{position:relative;width:120px;height:8px;background:#E4E4E7;border-radius:4px}
+.gauge-fill{position:absolute;left:0;top:0;height:8px;border-radius:4px}
+/* over limit: solid red bar + hatched red end cap (same as the Power Apps SVG) */
+.gauge-track.over{background:transparent}
+.gauge-track.over .gauge-solid{position:absolute;left:0;top:0;height:8px;width:calc(100% - 18px);background:#DC2626;border-radius:4px}
+.gauge-track.over .gauge-hatch{position:absolute;right:2px;top:0;height:8px;width:16px;border-radius:0 4px 4px 0;
+  background:repeating-linear-gradient(-55deg,#DC2626 0 1.9px,transparent 1.9px 3.2px)}
+.gauge-val{font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;min-width:64px;text-align:right}
 .cell-muted{color:var(--muted);font-weight:400}
 .issue{color:var(--red)}
 .coords{font-size:11px;color:var(--muted);padding:10px 6px 0}
@@ -208,19 +213,19 @@ function bucketOf(status){
 
 /* ── DEMO DATA ── shown only when no hash payload is present */
 const DEMO=[
-  {Pit_Name:'Rodney Ball Pit',Pit_ID:'389',Locality:'Monto',Latitude:-24.835,Longitude:151.098,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Kenneth Ball',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:107,Last_Production_Date:'2026-08-25'},
-  {Pit_Name:'Hampson Pit',Pit_ID:'175',Locality:'Monto',Latitude:-24.902,Longitude:151.172,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Hugh S Stanhope',Owner_Issue:'Access track dispute',Extraction_Limit:5000,Capacity_Used:100,Last_Production_Date:'2026-08-21'},
-  {Pit_Name:'Goschnicks Pit',Pit_ID:'181',Locality:'Monto',Latitude:-24.791,Longitude:151.205,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Michael Downs',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:95,Last_Production_Date:'2026-08-19'},
-  {Pit_Name:'Salisbury Pit',Pit_ID:'433',Locality:'Monto',Latitude:-24.930,Longitude:151.060,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Russ Salisbury',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:211,Last_Production_Date:'2026-08-02'},
-  {Pit_Name:'Bonnie Doone',Pit_ID:'239',Locality:'Monto',Latitude:-24.760,Longitude:151.130,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Grant & Carly Burnham',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:37,Last_Production_Date:'2026-08-15'},
-  {Pit_Name:'Baywulla Pit',Pit_ID:'347',Locality:'Monto',Latitude:-24.880,Longitude:151.240,Production_Pit_Status:'Completed',Category:'NBRC',Owner:'NBRC',Owner_Issue:'',Extraction_Limit:2000,Capacity_Used:9,Last_Production_Date:'2026-07-03'},
-  {Pit_Name:'Yarrol Rd Roadside',Pit_ID:'327',Locality:'Monto',Latitude:-24.960,Longitude:151.150,Production_Pit_Status:'No more gravel available',Category:'NBRC',Owner:'NBRC',Owner_Issue:'',Extraction_Limit:2000,Capacity_Used:0,Last_Production_Date:''},
-  {Pit_Name:'Ellbank Pit',Pit_ID:'50',Locality:'Eidsvold',Latitude:-25.355,Longitude:151.085,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Lance & Janelle Burnham',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:75,Last_Production_Date:'2026-08-14'},
-  {Pit_Name:'Glencoe 1 - Forestry Pit',Pit_ID:'49',Locality:'Eidsvold',Latitude:-25.420,Longitude:151.160,Production_Pit_Status:'Not started',Category:'State',Owner:'DAFF',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:null,Last_Production_Date:''},
-  {Pit_Name:'Kerles Pit',Pit_ID:'277',Locality:'Mundubbera',Latitude:-25.560,Longitude:151.270,Production_Pit_Status:'Not started',Category:'Private',Owner:'',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:null,Last_Production_Date:''},
-  {Pit_Name:'Draytons',Pit_ID:'133',Locality:'Gayndah',Latitude:-25.650,Longitude:151.580,Production_Pit_Status:'Not started',Category:'Private',Owner:'',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:null,Last_Production_Date:''},
-  {Pit_Name:'Box Flat Pit',Pit_ID:'258',Locality:'Mount Perry',Latitude:-25.190,Longitude:151.660,Production_Pit_Status:'Not started',Category:'TMR',Owner:'TMR',Owner_Issue:'',Extraction_Limit:5000,Capacity_Used:null,Last_Production_Date:''},
-  {Pit_Name:'Daisys',Pit_ID:'2',Locality:'Biggenden',Latitude:null,Longitude:null,Production_Pit_Status:'Not started',Category:'NBRC',Owner:'NBRC',Owner_Issue:'',Extraction_Limit:100000,Capacity_Used:null,Last_Production_Date:''},
+  {Pit_Name:'Rodney Ball Pit',Pit_ID:'389',Locality:'Monto',Latitude:-24.835,Longitude:151.098,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Kenneth Ball',Owner_Issue:'',Extraction_Limit:5000,Stock_Remaining:5350,Last_Production_Date:'2026-08-25'},
+  {Pit_Name:'Hampson Pit',Pit_ID:'175',Locality:'Monto',Latitude:-24.902,Longitude:151.172,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Hugh S Stanhope',Owner_Issue:'Access track dispute',Extraction_Limit:5000,Stock_Remaining:5000,Last_Production_Date:'2026-08-21'},
+  {Pit_Name:'Goschnicks Pit',Pit_ID:'181',Locality:'Monto',Latitude:-24.791,Longitude:151.205,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Michael Downs',Owner_Issue:'',Extraction_Limit:5000,Stock_Remaining:3600,Last_Production_Date:'2026-08-19'},
+  {Pit_Name:'Salisbury Pit',Pit_ID:'433',Locality:'Monto',Latitude:-24.930,Longitude:151.060,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Russ Salisbury',Owner_Issue:'',Extraction_Limit:5000,Stock_Remaining:5800,Last_Production_Date:'2026-08-02'},
+  {Pit_Name:'Bonnie Doone',Pit_ID:'239',Locality:'Monto',Latitude:-24.760,Longitude:151.130,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Grant & Carly Burnham',Owner_Issue:'',Extraction_Limit:5000,Stock_Remaining:1850,Last_Production_Date:'2026-08-15'},
+  {Pit_Name:'Baywulla Pit',Pit_ID:'347',Locality:'Monto',Latitude:-24.880,Longitude:151.240,Production_Pit_Status:'Completed',Category:'NBRC',Owner:'NBRC',Owner_Issue:'',Extraction_Limit:2000,Stock_Remaining:180,Last_Production_Date:'2026-07-03'},
+  {Pit_Name:'Yarrol Rd Roadside',Pit_ID:'327',Locality:'Monto',Latitude:-24.960,Longitude:151.150,Production_Pit_Status:'No more gravel available',Category:'NBRC',Owner:'NBRC',Owner_Issue:'',Extraction_Limit:2000,Stock_Remaining:0,Last_Production_Date:''},
+  {Pit_Name:'Ellbank Pit',Pit_ID:'50',Locality:'Eidsvold',Latitude:-25.355,Longitude:151.085,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Lance & Janelle Burnham',Owner_Issue:'',Extraction_Limit:5000,Stock_Remaining:2100,Last_Production_Date:'2026-08-14'},
+  {Pit_Name:'Glencoe 1 - Forestry Pit',Pit_ID:'49',Locality:'Eidsvold',Latitude:-25.420,Longitude:151.160,Production_Pit_Status:'Not started',Category:'State',Owner:'DAFF',Owner_Issue:'',Extraction_Limit:5000,Stock_Remaining:null,Last_Production_Date:''},
+  {Pit_Name:'Kerles Pit',Pit_ID:'277',Locality:'Mundubbera',Latitude:-25.560,Longitude:151.270,Production_Pit_Status:'Not started',Category:'Private',Owner:'',Owner_Issue:'',Extraction_Limit:5000,Stock_Remaining:null,Last_Production_Date:''},
+  {Pit_Name:'Draytons',Pit_ID:'133',Locality:'Gayndah',Latitude:-25.650,Longitude:151.580,Production_Pit_Status:'Not started',Category:'Private',Owner:'',Owner_Issue:'',Extraction_Limit:5000,Stock_Remaining:null,Last_Production_Date:''},
+  {Pit_Name:'Box Flat Pit',Pit_ID:'258',Locality:'Mount Perry',Latitude:-25.190,Longitude:151.660,Production_Pit_Status:'Not started',Category:'TMR',Owner:'TMR',Owner_Issue:'',Extraction_Limit:5000,Stock_Remaining:null,Last_Production_Date:''},
+  {Pit_Name:'Daisys',Pit_ID:'2',Locality:'Biggenden',Latitude:null,Longitude:null,Production_Pit_Status:'Not started',Category:'NBRC',Owner:'NBRC',Owner_Issue:'',Extraction_Limit:100000,Stock_Remaining:null,Last_Production_Date:''},
 ];
 
 /* ── NORMALISE ── tolerant to display-name / logical-name keys from Power Apps */
@@ -243,7 +248,7 @@ function normalise(raw,i){
     owner:String(g('Owner','owner')??'').trim(),
     ownerIssue:String(g('Owner_Issue','Owner Issue','OwnerIssue','Owner_Issues','ownerIssue')??'').trim(),
     limit:num(g('Extraction_Limit','Extraction Limit','ExtractionLimit','limit')),
-    capacity:num(g('Capacity_Used','Capacity Used','CapacityUsed','capacity')),
+    stock:num(g('Stock_Remaining','StockRemaining','Stock Remaining','stock')),
     lastProd:String(g('Last_Production_Date','Last Production Date','LastProductionDate','lastProd')??'').trim(),
   };
 }
@@ -273,7 +278,8 @@ function catClass(c){
   if(s.includes('tmr'))return 'cat-tmr';
   return 'cat-other';
 }
-function gaugeColor(pct){return pct>100?'#C24545':pct>=90?'#D98C1F':'#25865A';}
+// same thresholds as the Power Apps stock bar
+function stockColor(r){return r>=1?'#DC2626':r>=2/3?'#FF7F26':r>=1/3?'#C9A446':'#2A7769';}
 
 /* ── LOAD FROM HASH ── */
 function loadFromHash(){
@@ -337,9 +343,7 @@ function renderPanel(){
 
 function detailHtml(p){
   const b=p.bucket;
-  const cap=p.capacity;
-  const gauge=cap===null?'<span class="cell-muted">—</span>':
-    `<div class="gauge"><div class="gauge-track"><div class="gauge-fill" style="width:${Math.max(0,Math.min(100,cap))}%;background:${gaugeColor(cap)}"></div></div><span class="gauge-pct">${Math.round(cap)}%</span></div>`;
+  const gauge=stockBar(p.stock,p.limit);
   const issue=p.ownerIssue&&!/^none$/i.test(p.ownerIssue)?`<span class="issue">${esc(p.ownerIssue)}</span>`:'<span class="cell-muted">None</span>';
   return `<button class="detail-back" onclick="clearSelection()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back to pit list</button>
   <div class="panel-head" style="border-top:3px solid ${b.color};margin-top:10px;padding-top:14px;">
@@ -352,10 +356,20 @@ function detailHtml(p){
     <div class="info-line"><span class="k">Owner</span><span class="v">${p.owner?esc(p.owner):'<span class="cell-muted">—</span>'}</span></div>
     <div class="info-line"><span class="k">Owner issue</span><span class="v">${issue}</span></div>
     <div class="info-line"><span class="k">Extraction limit</span><span class="v">${p.limit!==null?fmtN(p.limit)+' t':'<span class="cell-muted">—</span>'}</span></div>
-    <div class="info-line"><span class="k">Capacity used</span><span class="v">${gauge}</span></div>
+    <div class="info-line"><span class="k">Stock remaining</span><span class="v">${gauge}</span></div>
     <div class="info-line"><span class="k">Last production</span><span class="v">${p.lastProd?esc(fmtDate(p.lastProd)):'<span class="cell-muted">—</span>'}</span></div>
     <div class="coords">${p.hasGps?`📍 ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`:'⚠ No GPS coordinates — not shown on the map'}</div>
   </div>`;
+}
+
+function stockBar(v,limit){
+  if(v===null) return '<span class="cell-muted">—</span>';
+  const lim=limit||0, ratio=lim>0?v/lim:0, over=lim>0&&v>lim;
+  const label=`<span class="gauge-val">${fmtN(v)} t</span>`;
+  if(over) return `<div class="gauge"><div class="gauge-track over" title="${fmtN(v)} t of ${fmtN(lim)} t limit"><div class="gauge-solid"></div><div class="gauge-hatch"></div></div>${label}</div>`;
+  const W=120, fill=Math.max(8,Math.round(W*Math.min(ratio,1)));
+  const bar=ratio>0?`<div class="gauge-fill" style="width:${fill}px;background:${stockColor(ratio)}"></div>`:'';
+  return `<div class="gauge"><div class="gauge-track" title="${fmtN(v)} t of ${lim?fmtN(lim)+' t limit':'no limit set'}">${bar}</div>${label}</div>`;
 }
 
 function selectPit(key,fly){
