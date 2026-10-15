@@ -113,6 +113,10 @@ button{font-family:inherit;cursor:pointer}
 .gauge-track.over .gauge-solid{position:absolute;left:0;top:0;height:8px;width:calc(100% - 18px);background:#DC2626;border-radius:4px}
 .gauge-track.over .gauge-hatch{position:absolute;right:2px;top:0;height:8px;width:16px;border-radius:0 4px 4px 0;
   background:repeating-linear-gradient(-55deg,#DC2626 0 1.9px,transparent 1.9px 3.2px)}
+.gauge-track{cursor:default}
+.gauge-track[data-tip]:hover::after{content:attr(data-tip);position:absolute;right:0;bottom:16px;z-index:5;white-space:pre;
+  background:#18181B;color:#fff;font-size:11.5px;font-weight:600;line-height:1.45;padding:6px 10px;border-radius:7px;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none}
+.gauge-track[data-tip]:hover::before{content:"";position:absolute;right:14px;bottom:10px;z-index:5;border:6px solid transparent;border-top-color:#18181B;border-bottom:0;pointer-events:none}
 .gauge-val{font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;min-width:64px;text-align:right}
 .cell-muted{color:var(--muted);font-weight:400}
 .issue{color:var(--red)}
@@ -384,11 +388,16 @@ function detailHtml(p){
 function stockBar(v,limit){
   if(v===null) return '<span class="cell-muted">—</span>';
   const lim=limit||0, ratio=lim>0?v/lim:0, over=lim>0&&v>lim;
+  const pct=lim>0?Math.round(ratio*100):null;
+  // hover tooltip: Stock remaining % of extraction limit
+  const tip=lim>0
+    ? `Stock remaining: ${pct}%&#10;${fmtN(v)} t of ${fmtN(lim)} t limit`
+    : `Stock remaining: ${fmtN(v)} t&#10;No extraction limit set`;
   const label=`<span class="gauge-val">${fmtN(v)} t</span>`;
-  if(over) return `<div class="gauge"><div class="gauge-track over" title="${fmtN(v)} t of ${fmtN(lim)} t limit"><div class="gauge-solid"></div><div class="gauge-hatch"></div></div>${label}</div>`;
+  if(over) return `<div class="gauge"><div class="gauge-track over" data-tip="${tip}"><div class="gauge-solid"></div><div class="gauge-hatch"></div></div>${label}</div>`;
   const W=120, fill=Math.max(8,Math.round(W*Math.min(ratio,1)));
   const bar=ratio>0?`<div class="gauge-fill" style="width:${fill}px;background:${stockColor(ratio)}"></div>`:'';
-  return `<div class="gauge"><div class="gauge-track" title="${fmtN(v)} t of ${lim?fmtN(lim)+' t limit':'no limit set'}">${bar}</div>${label}</div>`;
+  return `<div class="gauge"><div class="gauge-track" data-tip="${tip}">${bar}</div>${label}</div>`;
 }
 
 function selectPit(key,fly){
