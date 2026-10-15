@@ -213,7 +213,7 @@ function bucketOf(status){
 const DEMO=[
   {Pit_Name:'Rodney Ball Pit',Pit_ID:'389',Locality:'Monto',Latitude:-24.835,Longitude:151.098,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Kenneth Ball',Owner_Issue:'',Extraction_Limit:5000,Stock_Remaining:5350,Last_Production_Date:'2026-08-25'},
   {Pit_Name:'Hampson Pit',Pit_ID:'175',Locality:'Monto',Latitude:-24.902,Longitude:151.172,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Hugh S Stanhope',Owner_Issue:'Access track dispute',Extraction_Limit:5000,Stock_Remaining:5000,Last_Production_Date:'2026-08-21'},
-  {Pit_Name:'Goschnicks Pit',Pit_ID:'181',Locality:'Monto',Latitude:-24.791,Longitude:151.205,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Michael Downs',Owner_Issue:'',Material_Available:'Yes',Compliance:'Compliant',Total_Produced:8200,Total_Hauled:4600,Extraction_Limit:5000,Stock_Remaining:3600,Last_Production_Date:'2026-08-19'},
+  {Pit_Name:'Goschnicks Pit',Pit_ID:'181',Locality:'Monto',Latitude:-24.791,Longitude:151.205,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Michael Downs',Owner_Issue:'',Material_Available:'Yes',Compliance:'Compliant',Best_Stock_Estimate:1200,Total_Produced:8200,Total_Hauled:4600,Extraction_Limit:5000,Stock_Remaining:3600,Last_Production_Date:'2026-08-19'},
   {Pit_Name:'Salisbury Pit',Pit_ID:'433',Locality:'Monto',Latitude:-24.930,Longitude:151.060,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Russ Salisbury',Owner_Issue:'',Extraction_Limit:5000,Stock_Remaining:5800,Last_Production_Date:'2026-08-02'},
   {Pit_Name:'Bonnie Doone',Pit_ID:'239',Locality:'Monto',Latitude:-24.760,Longitude:151.130,Production_Pit_Status:'Under Production',Category:'Private',Owner:'Grant & Carly Burnham',Owner_Issue:'',Extraction_Limit:5000,Stock_Remaining:1850,Last_Production_Date:'2026-08-15'},
   {Pit_Name:'Baywulla Pit',Pit_ID:'347',Locality:'Monto',Latitude:-24.880,Longitude:151.240,Production_Pit_Status:'Completed',Category:'NBRC',Owner:'NBRC',Owner_Issue:'',Extraction_Limit:2000,Stock_Remaining:180,Last_Production_Date:'2026-07-03'},
@@ -248,6 +248,7 @@ function normalise(raw,i){
     ownerIssue:String(g('Owner_Issue','Owner Issue','OwnerIssue','Owner_Issues','ownerIssue')??'').trim(),
     limit:num(g('Extraction_Limit','Extraction Limit','ExtractionLimit','limit')),
     stock:num(g('Stock_Remaining','StockRemaining','Stock Remaining','stock')),
+    bestEstimate:num(g('Best_Stock_Estimate','Best_Available_Stock_Estimate','BestStockEstimate','Best Available Stock Estimate (t)')),
     produced:num(g('Total_Produced','TotalProduced','MaterialProduced','Material_Produced','Total Produced')),
     hauled:num(g('Total_Hauled','TotalHauled','Total Hauled')),
     material:String(g('Material_Available','MaterialAvailable','Material Available')??'').trim(),
@@ -361,6 +362,7 @@ function detailHtml(p){
     <div class="info-line"><span class="k">Material available</span><span class="v">${p.material?esc(p.material):'<span class="cell-muted">—</span>'}</span></div>
     <div class="info-line"><span class="k">Compliance</span><span class="v">${p.compliance?esc(p.compliance):'<span class="cell-muted">—</span>'}</span></div>
     <div class="info-line"><span class="k">Extraction limit</span><span class="v">${p.limit!==null?fmtN(p.limit)+' t':'<span class="cell-muted">—</span>'}</span></div>
+    <div class="info-line"><span class="k">Best available stock estimate</span><span class="v">${p.bestEstimate!==null?fmtN(p.bestEstimate)+' t':'<span class="cell-muted">—</span>'}</span></div>
     <div class="info-line"><span class="k">Total produced</span><span class="v">${p.produced!==null?fmtN(p.produced)+' t':'<span class="cell-muted">—</span>'}</span></div>
     <div class="info-line"><span class="k">Total hauled</span><span class="v">${p.hauled!==null?fmtN(p.hauled)+' t':'<span class="cell-muted">—</span>'}</span></div>
     <div class="info-line"><span class="k">Stock remaining</span><span class="v">${gauge}</span></div>
@@ -503,7 +505,8 @@ function postUp(obj){
   try{
     const msg=JSON.stringify(Object.assign({},obj,{_ts:Date.now()}));
     window.parent.postMessage(msg,'*');
-    try{sessionStorage.setItem('gravel_pitmap_message',msg);}catch(e){}
+    try{sessionStorage.setItem('gravel_pitmap_message',msg);sessionStorage.setItem('drfa_map_message',msg);}catch(e){}
+    try{if(window.top&&window.top!==window.parent)window.top.postMessage(msg,'*');}catch(e){}
   }catch(e){}
 }
 
